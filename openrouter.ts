@@ -6,6 +6,12 @@ if (!token) {
   throw new Error("OPENROUTER_TOKEN is not defined in the environment variables");
 }
 
+const model = process.env.OPEN_MODEL;
+if (!model) {
+  throw new Error("OPEN_MODEL is not defined in the environment variables");
+}
+
+
 class OpenRouter {
   async chat(keywords: string): Promise<string> {
     try {
@@ -18,7 +24,7 @@ class OpenRouter {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "google/gemini-2.0-flash-lite-preview-02-05:free",
+            model: `${model}`,
             messages: [
               {
                 role: "user",
