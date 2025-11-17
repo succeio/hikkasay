@@ -6,7 +6,12 @@ if (!token) {
   throw new Error("OPENROUTER_TOKEN is not defined in the environment variables");
 }
 
-const model = process.env.OPEN_MODEL;
+let model = process.env.OPEN_MODEL;
+
+export function setModel(m: string) {
+  model = m
+}
+
 if (!model) {
   throw new Error("OPEN_MODEL is not defined in the environment variables");
 }

@@ -2,6 +2,7 @@ import OpenRouter from "./openrouter";
 import TelegramBot, { Message } from "node-telegram-bot-api";
 import { casttemplate, hacktemplate, cthultemplate } from "./casttemplate";
 import dotenv from "dotenv";
+import { setModel } from "./openrouter";
 
 // Загружаем переменные окружения из .env файла
 dotenv.config();
@@ -22,7 +23,7 @@ const bot = new TelegramBot(token, {
 // ID чата для отправки сообщений
 // test -1002041281515
 // tdoh -1001242433481
-const chatId = -1001242433481;
+const chatId = -1001242433481
 
 // Получаем информацию о боте
 let botId: number;
@@ -70,6 +71,21 @@ bot.on("message", async (msg: Message) => {
     }
   }
 });
+
+// Изменение языковой модели
+bot.on("message", async (msg: Message) => {
+  if (msg.chat.id !== chatId) return
+
+  if (msg.text && msg.text.length > 0) {
+    const messageText = msg.text.toString().toLowerCase();
+    
+    if (messageText.includes("setmodel")) {
+      const model = messageText.replace("setmodel", "").trim();
+      setModel(model)
+      bot.sendMessage(chatId, `Установлена языковая модель ${model}`)
+    }
+  }  
+})
 
 // Симуляция диалога OpenRouter
 bot.on("message", async (msg: Message) => {
