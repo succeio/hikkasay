@@ -10,6 +10,12 @@ if (!token) {
 class OpenSora {
   async video(prompt: string) {
     try {
+      const formData = new FormData()
+      formData.append("model", "sora-2-pro")
+      formData.append("prompt", prompt)
+      formData.append("size", "1280x720")
+      formData.append("seconds", "8")
+
       let response = await fetch(
         "https://api.openai.com/v1/videos",
         {method: "POST",
@@ -17,17 +23,12 @@ class OpenSora {
             Authorization: `Bearer ${token}`,
             "Content-Type": `multipart/form-data`
           },
-          body: JSON.stringify({
-            model: `sora-2`,
-            prompt: prompt,
-            size: `1280x720`,
-            seconds: `8`
-          })
+          body: formData
         }
       )
 
       if (!response.ok) {
-        throw new Error("Network response was not ok " + response.statusText);
+        throw new Error(`Ошибка: ${response.status} ${response.statusText}`)
       }
 
       const data = await response.json()
@@ -51,6 +52,8 @@ class OpenSora {
 
       if (content.ok) {
         return content.blob()
+      } else {
+        throw new Error(`Ошибка: ${content.status} ${content.statusText}`)
       }
 
     } catch (error) {

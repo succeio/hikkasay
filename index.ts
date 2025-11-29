@@ -24,7 +24,7 @@ const bot = new TelegramBot(token, {
 // ID чата для отправки сообщений
 // test -1002041281515
 // tdoh -1001242433481
-const chatId = -1001242433481
+const chatId = -1002041281515
 
 // Получаем информацию о боте
 let botId: number;
