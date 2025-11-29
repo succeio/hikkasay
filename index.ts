@@ -1,4 +1,5 @@
 import OpenRouter from "./openrouter";
+import OpenSora from "./opensora";
 import TelegramBot, { Message } from "node-telegram-bot-api";
 import { casttemplate, hacktemplate, cthultemplate } from "./casttemplate";
 import dotenv from "dotenv";
@@ -47,7 +48,7 @@ bot.on("message", async (msg: Message) => {
   if (msg.text && msg.text.length > 0) {
     const messageText = msg.text.toString().toLowerCase();
 
-    if (messageText.includes("open")) {
+    if (messageText.startsWith("open")) {
       const que = messageText.replace("open", "").trim();
       try {
         const openRouterInstance = new OpenRouter();
@@ -79,12 +80,35 @@ bot.on("message", async (msg: Message) => {
   if (msg.text && msg.text.length > 0) {
     const messageText = msg.text.toString().toLowerCase();
     
-    if (messageText.includes("setmodel")) {
+    if (messageText.startsWith("setmodel")) {
       const model = messageText.replace("setmodel", "").trim();
       setModel(model)
       bot.sendMessage(chatId, `Установлена языковая модель ${model}`)
     }
   }  
+})
+
+// Команда sora
+// Не потестировать(((
+bot.on("message", async (msg: Message) => {
+  if (msg.chat.id !== chatId) return
+
+  const messageText = msg.text?.toString().toLocaleLowerCase()
+  if (messageText?.startsWith("sora")) {
+    const openSoraInstance = new OpenSora()
+    const response = await openSoraInstance.video(messageText)
+
+    if (typeof response === 'string') {
+      bot.sendMessage(chatId, response)
+    }
+
+    if (response instanceof Blob) {
+      const arrayBuffer = await response.arrayBuffer()
+      const buffer = Buffer.from(arrayBuffer)
+
+      bot.sendVideo(chatId, buffer)
+    }
+  }
 })
 
 // Симуляция диалога OpenRouter
@@ -146,7 +170,7 @@ bot.on("message", async (msg: Message) => {
   if (msg.text && msg.text.length > 0) {
     const messageText = msg.text.toString().toLowerCase();
 
-    if (messageText.includes("каст")) {
+    if (messageText.startsWith("каст")) {
       const que = messageText.replace("каст", "").trim();
       const req = casttemplate(que);
       try {
@@ -170,7 +194,7 @@ bot.on("message", async (msg: Message) => {
       }
     }
 
-    if (messageText.includes("хак")) {
+    if (messageText.startsWith("хак")) {
       const que = messageText.replace("хак", "").trim();
       const req = hacktemplate(que);
       try {
@@ -194,7 +218,7 @@ bot.on("message", async (msg: Message) => {
       }
     }
 
-    if (messageText.includes("ктул")) {
+    if (messageText.startsWith("ктул")) {
       const que = messageText.replace("ктул", "").trim();
       const req = cthultemplate(que);
       try {

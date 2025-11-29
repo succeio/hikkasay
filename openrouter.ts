@@ -1,19 +1,19 @@
-import dotenv from "dotenv";
-dotenv.config();
+import dotenv from "dotenv"
+dotenv.config()
 
-const token = process.env.OPENROUTER_TOKEN;
+const token = process.env.OPENROUTER_TOKEN
 if (!token) {
-  throw new Error("OPENROUTER_TOKEN is not defined in the environment variables");
+  throw new Error("OPENROUTER_TOKEN is not defined in the environment variables")
 }
 
-let model = process.env.OPEN_MODEL;
+let model = process.env.OPEN_MODEL
 
 export function setModel(m: string) {
   model = m
 }
 
 if (!model) {
-  throw new Error("OPEN_MODEL is not defined in the environment variables");
+  throw new Error("OPEN_MODEL is not defined in the environment variables")
 }
 
 
@@ -43,31 +43,31 @@ class OpenRouter {
             ],
           }),
         }
-      );
+      )
 
       if (!response.ok) {
-        throw new Error("Network response was not ok " + response.statusText);
+        throw new Error("Network response was not ok " + response.statusText)
       }
 
-      const data = await response.json(); // Преобразуем ответ в JSON
+      const data = await response.json() // Преобразуем ответ в JSON
 
       // Проверяем наличие choices и выводим ответ от ИИ
       if (data.choices && data.choices.length > 0) {
-        const message = data.choices[0].message; // Получаем первое сообщение
-        return message.content;
+        const message = data.choices[0].message // Получаем первое сообщение
+        return message.content
       } else {
-        return "No choices available.";
+        return "No choices available."
       }
     } catch (error) {
       if (error instanceof Error) {
-        console.error("There was a problem with the fetch operation:", error);
-        return "Error occurred: " + error.message; // Возвращаем сообщение об ошибке
+        console.error("Проблема сетевого запроса:", error)
+        return "Проблема сетевого запроса: " + error.message // Возвращаем сообщение об ошибке
       } else {
-        console.error("Unexpected error:", error);
-        return "An unexpected error occurred.";
+        console.error("Неожиданная проблема:", error)
+        return "Привышен лимит ожидания ответа модели."
       }
     }
   }
 }
 
-export default OpenRouter;
+export default OpenRouter
