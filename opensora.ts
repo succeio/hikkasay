@@ -11,50 +11,82 @@ class OpenSora {
   async video(prompt: string) {
     try {
       const formData = new FormData()
-      formData.append("model", "sora-2-pro")
+      formData.append("model", "sora-2")
       formData.append("prompt", prompt)
-      formData.append("size", "1280x720")
-      formData.append("seconds", "8")
 
       let response = await fetch(
         "https://api.openai.com/v1/videos",
-        {method: "POST",
+        {
+          method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": `multipart/form-data`
           },
           body: formData
         }
       )
 
       if (!response.ok) {
-        throw new Error(`Ошибка: ${response.status} ${response.statusText}`)
+        const text = await response.text()
+        let msg = text
+        try {
+          const parsed = JSON.parse(text)
+          msg = `${parsed.error?.code}: ${parsed.error?.message}`
+        }
+        catch {}
+        throw new Error(`Content fetch failed: ${msg}`)
       }
 
-      const data = await response.json()
+      let data = await response.json()
 
-      while (data.status === 'in_progress' || data.status === 'queued') {
-        response = await fetch(`https://api.openai.com/v1/videos/${data.id}`)
-        
-        // таймаут 2 секунды
-        await new Promise((resolve) => setTimeout(resolve, 2000))
+
+      const startedAt = Date.now()
+      const TIMEOUT = 2 * 60 * 1000
+
+      while (data.status === "queued" || data.status === "in_progress") {
+
+        if (Date.now() - startedAt > TIMEOUT) {
+          throw new Error("Video generation timeout")
+        }
+
+        await new Promise(r => setTimeout(r, 2000))
+
+        response = await fetch(
+          `https://api.openai.com/v1/videos/${data.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        )
+
+        data = await response.json()
       }
 
-      if (data.status === 'failed') {
-        return 'Video generation failed'
-      }      
-
-      const content = await fetch(`https://api.openai.com/v1/videos/${data.id}/content`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        } 
-      })
-
-      if (content.ok) {
-        return content.blob()
-      } else {
-        throw new Error(`Ошибка: ${content.status} ${content.statusText}`)
+      if (data.status === "failed") {
+        throw new Error("Video generation failed")
       }
+
+      const content = await fetch(
+        `https://api.openai.com/v1/videos/${data.id}/content`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+
+      if (!content.ok) {
+        const text = await content.text()
+        let msg = text
+        try {
+          const parsed = JSON.parse(text)
+          msg = `${parsed.error?.code}: ${parsed.error?.message}`
+        }
+        catch {}
+        throw new Error(`Content fetch failed: ${content.status}:  ${msg}`)
+      }
+
+      return await content.blob()
 
     } catch (error) {
       if (error instanceof Error) {
